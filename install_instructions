@@ -1,8 +1,0 @@
-1. download and uncompress lapack-3.5.0.tgz
-2. cd lapack-3.5.0
-3. cp INSTALL/make.inc.gfortran make.inc
-4. make blaslib
-5. make lapacklib
-6. cd lapacke
-7. make
-
