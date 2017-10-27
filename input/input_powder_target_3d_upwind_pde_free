@@ -1,0 +1,32 @@
+24					number of threads
+0					start time
+100					end time
+0.5					write time interval
+0.1					CFL coefficien
+3					dimension
+1					how many fluid objects
+powdertarget3d				geoemtry for fluid object0
+powdertarget3dstate			state for fluid object0
+2					how many boundary objects?
+powdertarget3dsolidboundary		boundary for fluid object0 (in 1d ignore this)
+solid					type of boundary object (periodic, free, solid)
+free      boundary name for object1(does not matter for free boundary condition)
+free      boundary type for object1
+0					use random order for direction splittig? 1:yes 0:no
+1					order of local polynomial fitting
+1					EOS choice: 1:POLY 2:Stiffened POLY
+10.0			       		EOS param: gamma
+10					SPOLY EOS param: pinf
+0.					SPOLY EOS param: einf
+0.04					initial particle spacing
+-5.e-4					gravity
+1					use a moving box for ghost particle generation? 1:yes 0:no
+0					use limiter? 1:yes 0:no 
+10					Threshold value on pressure if limiter is used
+0					use critical pressure for cavitation? 1:yes 0:no
+0					critical pressure
+1					variable neighbour search radius? 0:no 1:yes
+0             second order scheme 1: Lax Wendroff scheme 0: Beam Warming scheme
+0             no directional splitting 1: no split 0: split
+0               density estimator 1:SPH 0: PDE
+
