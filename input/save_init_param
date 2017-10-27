@@ -1,0 +1,51 @@
+m_iNumThreads 4
+m_fStartTime 0
+m_fEndTime 0.1
+m_fWriteTimeInterval 0.05
+m_fCFLCoeff 0.999
+m_iDimension 2
+m_iFluidObjNum 1
+m_vFluidObjectNames0 gresho2d
+m_vFluidObjectStateNames0 gresho2dstate
+m_iBoundaryObjNum 1
+m_vBoundaryObjectNames0 gresho2dsolidboundary
+m_vBoundaryObjectTypes0 solid
+m_iRandomDirSplitOrder 1
+m_iLPFOrder 2
+m_iEOSChoice 1
+m_fGamma 1.66667
+m_fPinf 0
+m_fEinf 0
+m_fInitParticleSpacing 0.05
+m_fGravity 0
+m_iMovingBoxForGhostParticle 1
+m_iUseLimiter 0
+m_fThresholdP 10
+m_iUseCriticalPressure 0
+m_fCriticalPressure 0
+m_iVariableNeiSearchRadius 1
+m_iWriteStep 0
+m_fTimesNeiSearchRadius 4
+m_fTimesCapacity 3
+m_fNeiSearchRadius 0.2
+m_iMaxNeighbourNum 513
+m_iMaxNeighbourNumInOneDir 256
+m_iNumRow2ndOrder 7
+m_iNumRow1stOrder 3
+m_iNumCol2ndOrder 5
+m_iNumCol1stOrder 2
+m_fInvalidPressure 0
+m_fInvalidDensity 0
+m_iTreeDepth 5
+m_fContactLength 0.055
+m_vFluidBoundingBox(0):
+m_fXmin=-1.25
+m_fXmax=1.25
+m_fYmin=-1.25
+m_fYmax=1.25
+m_fZmin=0
+m_fZmax=0
+-----------------
+m_iFluidNum 1449
+m_iCapacity 4347
+m_iFluidStartIndex 0

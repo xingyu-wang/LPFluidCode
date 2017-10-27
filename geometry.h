@@ -17,6 +17,7 @@
 #define __GEOMETRY_H__
 
 #include <unordered_map>
+#include <string>
 
 /**
  * \class Geometry

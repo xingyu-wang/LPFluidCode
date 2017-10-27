@@ -4,6 +4,7 @@
 #include "initializer.h"
 #include <cassert>
 #include <iostream>
+#include "omp.h"
 
 using namespace std;
 
@@ -44,21 +45,20 @@ bool TimeController::adjustDtByWriteTimeInterval() {
 
 DefaultTimeController::DefaultTimeController(const Initializer& init, LPSolver* solver, const vector<ParticleViewer*>& viewers) {
 	
-	// The following are protected data members in the base class
+	
 	m_pSolver = solver;
 	m_vViewers = viewers;
 
 	m_fTime    = init.getStartTime();
-	m_fEndTime = init.getEndTime();	
+	m_fEndTime = init.getEndTime();
+        m_fAvgParticleSpacing = init.getInitParticleSpacing();	
+	//m_iWriteStep = 0;
+	m_iWriteStep = init.getWriteStep();
 	m_fWriteTimeInterval = init.getWriteTimeInterval();
 	m_fNextWriteTime = m_fTime + m_fWriteTimeInterval;
 	if(m_fNextWriteTime > m_fEndTime) m_fNextWriteTime = m_fEndTime;
 	m_fDt = 0;
-	m_iWriteStep = 0;
-	
-	// private data member in this class
 	m_fCFLCoeff = init.getCFLCoeff();
-	
 	m_iIfDebug = init.getIfDebug();
 	debug.open(init.getDebugfileName(), std::ofstream::out | std::ofstream::app);
 }
@@ -67,7 +67,10 @@ DefaultTimeController::DefaultTimeController(const Initializer& init, LPSolver* 
 int DefaultTimeController::solve() {
 	
 	// visualization at zero time step
+	m_pSolver->solve(0.0);
 	for(auto pViewer:m_vViewers) {
+//		cout<<"solve"<<endl;
+//                m_pSolver->solve(0.0);
 		pViewer->writeResult(m_fTime, m_iWriteStep);
 	}
 	m_iWriteStep++;
@@ -86,12 +89,18 @@ int DefaultTimeController::solve() {
 		printf("Time=%.16g, dt=%.16g, iterationStep=%ld\n",m_fTime, m_fDt, iterationStep);
 		
 		// call LPSolver to solve for this time step	
-		int isIterSuccess = m_pSolver->solve(m_fDt); // 0 = success	
-		
+//		double startTime = omp_get_wtime();
+	        double startTime;
+	        startTime = omp_get_wtime();
+
+		int isIterSuccess = m_pSolver->solve(m_fDt); // 0 = success		
+	        printf("Running time for iterationStep %ld = %.16g seconds\n", iterationStep, omp_get_wtime() - startTime);
+
 		if(isIterSuccess!=0) {
 			cout<<"Time = "<<m_fTime<<": solver fails!!!"<<endl;
 			return 1;
 		}
+//		printf("Solving one time step takes %.16g seconds\n", omp_get_wtime() - startTime);	
 		
 		// increment time
 		m_fTime += m_fDt;
@@ -100,9 +109,10 @@ int DefaultTimeController::solve() {
 		iterationStep++;
 		
 		// write results if necessary
-		if(isWriteTime) { 
+		if(0||isWriteTime) { 
 			printf("Time=%.16g, writeStep=%ld\n",m_fTime, m_iWriteStep); // check the write time is correct
 			for(auto pViewer:m_vViewers) {
+//				m_pSolver->solve(0.0);
 				pViewer->writeResult(m_fTime, m_iWriteStep);
 			}
 			m_iWriteStep++;	
@@ -115,14 +125,25 @@ int DefaultTimeController::solve() {
 
 
 void DefaultTimeController::computeDtByCFL() {
-	double minParticleSpacing = m_pSolver->getMinParticleSpacing();
-	double maxSoundSpeed = m_pSolver->getMaxSoundSpeed();
-	double maxFluidVelocity = m_pSolver->getMaxFluidVelocity();
+//	double minParticleSpacing = m_pSolver->getMinParticleSpacing();
+        double maxSoundSpeed = m_pSolver->getMaxSoundSpeed();
+        double maxFluidVelocity = m_pSolver->getMaxFluidVelocity();
+        double minParticleSpacing = m_fAvgParticleSpacing;
+
+//	double maxSoundSpeed =1.18322;
+//	double maxFluidVelocity = 0.92745;
 	double maxS = max(maxFluidVelocity,maxSoundSpeed);
-	assert(maxS!=0);
+//	double maxS = maxSoundSpeed;
+//	double maxS = 1.0;
+
+	if(maxS==0) {
+		cout<<"maxS==0"<<endl;
+		assert(false);
+	}
 	m_fDt = m_fCFLCoeff * minParticleSpacing / maxS;
+	cout<<"Min dx = "<<minParticleSpacing<<", max V = "<<maxFluidVelocity<<", Max c = "<<maxSoundSpeed<<endl;
 	if(m_fDt > m_fWriteTimeInterval) { 
-		cout<<"time = "<<m_fTime<<": m_fDt > m_fWriteTimeInterval!!!"<<endl; 
+		cout<<"time = "<<m_fTime<<": m_fDt = "<<m_fDt<<" > m_fWriteTimeInterval!!!"<<endl;
 	}
 	if(m_iIfDebug) {
 		debug.precision(16);

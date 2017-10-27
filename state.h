@@ -17,7 +17,7 @@
 #define __STATE_H__
 
 #include <unordered_map>
-
+#include <string>
 
 /**
  * \class State

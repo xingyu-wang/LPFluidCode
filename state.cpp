@@ -81,6 +81,7 @@ State* StateFactory::createState(std::string name) {
 	const auto result = stateTable.find(name);
 	if(result==stateTable.end()) {
 		std::cout<<"This state class name is not registered!!!"<<std::endl;
+		std::cout<<name<<std::endl;
 		return nullptr;
 	}
 	return (result->second)();

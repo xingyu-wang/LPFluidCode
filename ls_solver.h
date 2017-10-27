@@ -107,7 +107,7 @@ public:
 	 * \param [in] limitR A specified scalar multiplier (<1) for trimming diagonal entry of R in the QR decomposition
 	 *
 	 */
-	QRSolver(std::size_t numRow, std::size_t numCol, double *A, double limitR=1e-3) {  
+	QRSolver(std::size_t numRow, std::size_t numCol, double *A, double limitR=1e-3) {
 		m_iNumRow = numRow;
 		m_iNumCol = numCol;
 		m_vA = A;

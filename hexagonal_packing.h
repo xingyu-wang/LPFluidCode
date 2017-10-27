@@ -22,7 +22,7 @@
 
 #include <cstddef>
 #include <cmath>
-
+#include <stdlib.h>
 
 /**
  * \class HexagonalPacking2D
@@ -94,8 +94,9 @@ public:
 	 *
 	 */
 	double computeX(int tag, size_t k) {
-		if(tag==0) return xmin+2.0*h_r+k*2.0*h_r; //odd-numbered rows
-		else return  xmin+h_r+k*2.0*h_r; //even-numbered rows
+//		return xmin+2.0*h_r*k;
+		if(tag==0) return xmin+1.5*h_r+k*2.0*h_r+1*0.5*h_r*(2*((double)rand()/(double)RAND_MAX)-1); //odd-numbered rows
+		else return  xmin+0.5*h_r+k*2.0*h_r+1*0.5*h_r*(2*((double)rand()/(double)RAND_MAX)-1); //even-numbered rows
 	}
 	
 	/**
@@ -105,7 +106,8 @@ public:
 	 *
 	 */
 	double computeY(size_t j) {
-		return ymin+h_r+j*sqrt(3.0)*h_r;
+//		return ymin+2.0*h_r*j;
+		return ymin+0.5*sqrt(3.0)*h_r+j*sqrt(3.0)*h_r+1*0.5*h_r*(2*((double)rand()/(double)RAND_MAX)-1);
 	}
 
 private:
@@ -219,8 +221,8 @@ public:
 	 *
 	 */
 	double computeX(int tag, size_t k) {
-		if(tag==0) return xmin+2.0*h_r+k*2.0*h_r; //(odd layers && odd rows) || (even layers && even rows)
-		else return  xmin+h_r+k*2.0*h_r; // (odd layers && even rows) || (even layers && odd rows)
+		if(tag==0) return xmin+1.5*h_r+k*2.0*h_r+1.0*0.5*h_r*(2*((double)rand()/(double)RAND_MAX)-1); //(odd layers && odd rows) || (even layers && even rows)
+		else return  xmin+0.5*h_r+k*2.0*h_r+1.0*0.5*h_r*(2*((double)rand()/(double)RAND_MAX)-1); // (odd layers && even rows) || (even layers && odd rows)
 	}
 
 	/**
@@ -231,8 +233,8 @@ public:
 	 *
 	 */
 	double computeY(int tag, size_t j) {
-		if(tag==0) return ymin+h_r+j*sqrt(3.0)*h_r;	//odd-numbered layers
-		else return ymin+sqrt(3.0)/3.0*h_r+j*sqrt(3.0)*h_r; //even-numbered layers
+		if(tag==0) return ymin+1.5*sqrt(3.0)/3.0*h_r+j*sqrt(3.0)*h_r+1.0*0.5*h_r*(2*((double)rand()/(double)RAND_MAX)-1);	//odd-numbered layers
+		else return ymin+0.5*sqrt(3.0)/3.0*h_r+j*sqrt(3.0)*h_r+1.0*0.5*h_r*(2*((double)rand()/(double)RAND_MAX)-1); //even-numbered layers
 	}
 
 
@@ -243,7 +245,7 @@ public:
 	 *
 	 */
 	double computeZ(size_t i) {
-		return zmin+h_r+i*2.0*sqrt(6.0)/3.0*h_r;
+		return zmin+h_r+i*2.0*sqrt(6.0)/3.0*h_r+1.0*0.5*h_r*(2*((double)rand()/(double)RAND_MAX)-1);
 	}
 	
 private:

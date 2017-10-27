@@ -54,6 +54,12 @@ public:
 	 * \return               0 if output success; 1 otherwise
 	 */
 	virtual int writeResult(double time, std::size_t writeStep) = 0;
+	
+	/**
+	 * \brief virtual destructor
+	 *
+	 */
+	virtual ~ParticleViewer() {}
 
 protected:		
 	ParticleData* m_pParticleData;///< A pointer to the object which holds particle information and data
@@ -105,6 +111,12 @@ public:
 	VTKParticleViewer(ParticleData* data, const std::string& particleType, const std::string& outputfileName="", int numDigits=7);
 	
 	/**
+	 * \brief virtual destructor
+	 *
+	 */
+	virtual ~VTKParticleViewer() {}
+	
+	/**
 	 * \brief                Write simulation results to the output file in the .vtk format
 	 * \param [in] time      The physical output time
 	 * \param [in] writeStep The number of times of output
@@ -150,6 +162,12 @@ public:
 	 */
 	TXTParticleViewer1D(ParticleData* data, const std::string& particleType, const std::string& outputfileName="", int numDigits=7);
 	
+	/**
+	 * \brief virtual destructor
+	 *
+	 */
+	virtual ~TXTParticleViewer1D() {}
+
 	/**
 	 * \brief                Write 1D simulation results to the output file in the .txt format
 	 * \param [in] time      The physical output time

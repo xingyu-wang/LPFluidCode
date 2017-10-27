@@ -22,14 +22,16 @@ double PolytropicGasEOS::getSoundSpeed(double pressure, double density) {
 	if(density != 0)
 		cs = m_fGamma * pressure / density;
 	else {
-		std::cout<<"Error (Divide by zero)! Computing sound speed by EOS: "<<std::endl;
-		std::cout<<"density = "<<density<<std::endl;
+		std::cout<<"Error (Divide by zero density)! Computing sound speed by EOS: "<<std::endl;
+		//std::cout<<"density = "<<density<<std::endl;
 		assert(false);
 	}
 	if(cs > 0) 
 		return sqrt(cs);
+	else if(cs==0)
+		return cs;
 	else { // taking square root of a negative number
-		std::cout<<"Error (Taking suqre root of 0 or a negative number)! Computing sound speed by EOS: "<<std::endl; 
+		std::cout<<"Error (Taking suqre root of a negative number)! Computing sound speed by EOS: "<<std::endl; 
 		std::cout<<"gamma = "<<m_fGamma<<", pressure = "<<pressure<<", density = "<<density<<std::endl;
 		assert(false);
 	}
@@ -69,14 +71,16 @@ double StiffPolytropicGasEOS::getSoundSpeed(double pressure, double density) {
 	if(density != 0)
 		cs = m_fGamma * (pressure + m_fPinf) / density;
 	else {
-		std::cout<<"Error (Divide by zero)! Computing sound speed by EOS: "<<std::endl;
+		std::cout<<"Error (Divide by zero density)! Computing sound speed by EOS: "<<std::endl;
 		std::cout<<"density = "<<density<<std::endl;
 		assert(false);
 	}
 	if(cs > 0)
 		return sqrt(cs);
+	else if(cs==0)
+		return cs;
 	else { 
-		std::cout<<"Error (Taking suqre root of 0 or a negative number)! Computing sound speed by EOS: "<<std::endl; 
+		std::cout<<"Error (Taking suqre root of a negative number)! Computing sound speed by EOS: "<<std::endl; 
 		std::cout<<"gamma = "<<m_fGamma<<", pinf = "<<m_fPinf<<", pressure = "<<pressure<<", density = "<<density<<std::endl;
 		assert(false);
 	}  

@@ -6,7 +6,7 @@
 // Start of Ball
 ////////////////////////////////////////////////////////////////////////////////////////
 
-Ball::Ball():radius(0.5), xCen(0), yCen(0), zCen(0) {}
+Ball::Ball():radius(10.0), xCen(0), yCen(0), zCen(0) {}
 
 bool Ball::operator()(double x, double y, double z) const {
 	return ((x-xCen)*(x-xCen)+(y-yCen)*(y-yCen)+(z-zCen)*(z-zCen)<radius*radius);
@@ -78,6 +78,7 @@ Geometry* GeometryFactory::createGeometry(std::string name) {
 	const auto result = geoTable.find(name);
 	if(result==geoTable.end()) { // the goemetry class name is not registered
 		std::cout<<"This geometry class name is not registered!!!"<<std::endl;
+		std::cout<<name<<std::endl;
 		return nullptr;
 	}
 	return (result->second)();

@@ -1,20 +1,9 @@
-/**
- * \file   octree.h
- *
- * \brief  This header file contains classes for the Octree data structure and nearest neighbour search algorithms   
+/*!
+ * \author Yu, Kwangmin <yukwangmin@gmail.com> 
+ * \date Mon Oct. 15 2014
+ * 
+ * \brief Mainly for class Octree.
  *      
- *
- * \author  Yu, Kwangmin (yukwangmin@gmail.com)
- *
- *  
- *                           
- *
- * \version 1.0 
- *
- * \date 2014/10/15
- *
- * Created on: 2014/8/22 
- *
  */
 
 #ifndef __OCTREE_H__
@@ -45,20 +34,23 @@ typedef unsigned __int64 uint64_t;
 
 using namespace std;
 
-/**
- * \brief A simple struct for the neighbour search result
- *
- */
+
 struct SearchResult {
-  double distance; ///< The distance between the target particle and its neighbour
-  int index; ///< The index of the neighbour particle
-  /// Overloaded operator <
+  double distance;
+  int index;
+  double angle;
   bool operator < (const SearchResult& sr) const {
     return (distance < sr.distance);
   }
+  SearchResult& operator = (const SearchResult& sr) {
+    distance=sr.distance;
+    index=sr.index;
+    angle=sr.angle;
+    return *this;
+  }
 };
 
-
+bool compareSearchResultAngle(const SearchResult& sr1, const SearchResult& sr2);
 
 
 
@@ -77,20 +69,16 @@ struct KeyIndex
 };
 
 
-
-/**
- * \brief This class contains the Octree data structure and algorithm for nearest neighbour search of particles
- *      
- * This class is very strongly related with its implementation and the data structure of DefaultParticles class. 
- * So do not use this class with the general purpose. This class does not have octree search algorithm. 
- * The search algorithm is implemented in DefaultParticles and its subclasses.
- * The member fields starting from "m_v" must have same length with DefaultParticles::m_iNumOfParticles 
- * and m_iTotalNumberOfParticles. 
- * That is, the length of these member field means the total number of particles.
- * Each value of the array represent octree nodes.
- * The location information can be fetched by decoding m_vKey value.
- * \see DefaultParticles
- */
+/*!
+\brief This class is very strongly related with its implementation and the data structure of DefaultParticles class.
+       So do not use this class with the general purpose.
+       This class does not have octree search algorithm. The search algorithm is implemented in DefaultParticles and its subclasses.
+       The member fields starting from "m_v" must have same length with DefaultParticles::m_iNumOfParticles and m_iTotalNumberOfParticles. 
+       That is, the length of these member field means the total number of particles.
+       Each value of the array represent octree nodes.
+       The location information can be fetched by decoding m_vKey value.
+\see DefaultParticles
+*/
 class Octree {
 
 private:
@@ -111,6 +99,10 @@ private:
   \brief array of z-coordinates of particles.
   */
   const double *m_vCoordZ;
+
+  const double *mass;
+
+  const double *VolumeVoronoi;
 
   /*!
   \brief Total number of particles. The value of this field must be same with DefaultParticles::m_iNumOfParticles.
@@ -274,12 +266,31 @@ public:
   brief Building octree data structure.
   */
   int buildOctree(const double* x, const double* y, const double* z, size_t numParticles);
+  int buildOctree(const double* x, const double* y, const double* z, const double* m, size_t numParticles);
+  int buildOctree(const double* x, const double* y, const double* z, const double* m, const double* vv, size_t numParticles);
+
   //int buildOctree(const double *xp, const double *yp, const double *zp);
 
   int searchNeighbor(const double search_x, const double search_y, const double search_z, const double radius, int* result, size_t& result_length);
 
   int searchNeighbor(const double search_x, const double search_y, const double search_z, const double radius, SearchResult* result, size_t& result_length);
 
+	int searchNeighbor(const double search_x, const double search_y, const double search_z, const double radius, SearchResult* result, size_t& result_length, int count, double alpha, double beta);
+
+        int searchNeighbor(const double search_x, const double search_y, const double search_z, const double radius, SearchResult* result, size_t& result_length, int count, int dir);
+
+	int densityEstimator(const double x, const double y, const double z, const double radius, double* density_count, double dir_x, double dir_y, double dir_z);
+
+        int densityEstimator(const int search_i, const double x, const double y, const double z, const double radius, double* density_count, double dir_x, double dir_y, double dir_z);
+
+        int densityEstimator(const int search_i, const double x, const double y, const double z, const double radius, double* density_count, const double* volume, double* vmin, double* vmax);
+
+        int VoronoiDensityEstimator(const int search_index, const double x, const double y, const double z, const double radius, double* density_count);
+  /*
+   * \brief reset the maxParticleNum when data array is augmented 
+   *
+   */
+  void setMaxParticleNum(size_t maxParticleNum);
 private:
   /*!
   \brief This method computes the Morton Key for a particle whose coordinates are x,y and z.
@@ -287,6 +298,8 @@ private:
   inline uint32_t computeKey(const double& x, const double& y, const double& z);
 
   //void oneDimIndexTo2DimPair(vector<int>* numParticles, int index, int& clusterIndex, int& particleIndex);
+
+  void clearOctreeStructure();
 };
 
 

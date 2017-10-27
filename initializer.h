@@ -26,11 +26,12 @@
 #include <cstddef>
 #include <fstream>
 #include <vector>
+#include <map>
 
 class EOS;
 class Geometry;
 class State;
-
+class Boundary;
 
 /**
  * \class BoundingBox
@@ -127,7 +128,16 @@ public:
 	 */
 	size_t getNumber() {return m_iNumber;}
 	
-	
+
+	/**
+	 * \brief   Getter function of the tag of this object  
+	 *          
+	 * \param   None
+	 * \return  The tag
+	 */
+	size_t getObjectTag() {return m_iObjectTag;}
+
+
 	/**
 	 * \brief        Setter function of the minimum value in x-coordinate of the bounding box
 	 * \param   xmin The minimum value in x-coordinate of the bounding box
@@ -187,10 +197,20 @@ public:
 	 *          
 	 */
 	void setNumber(size_t num) {m_iNumber=num;}
+
+	/**
+	 * \brief   Setter function of the tag of this object 
+	 * \param   The tag
+	 * \return  None 
+	 *          
+	 */
+	void setObjectTag(int tag) {m_iObjectTag=tag;}
+
 private:
 	double m_fXmin, m_fXmax, m_fYmin, m_fYmax, m_fZmin, m_fZmax;
 	size_t m_iStartIndex;
 	size_t m_iNumber;
+	int m_iObjectTag;
 };
 
 
@@ -234,7 +254,18 @@ public:
      * 3. Initializes the state of fluid objects\n
      * 4. Specifies some pre-determined parameters and calculate some parameters 
 	 */	
-	Initializer(const std::string& inputfileName, const std::string& debugfileName="debug", bool ifDebug=false);	
+	Initializer(const std::string& inputfileName, bool ifDebug=false, const std::string& debugfileName="debug");	
+	
+	/**
+	 * \brief Constructor for restart 
+	 * 
+	 * 1. Reads the parameter file and data file\n 
+	 * 2. Initializes the geometry of fluid objects\n
+     * 3. Initializes the state of fluid objects 
+	 */	
+	Initializer(const std::string& param_filename, const std::string& data_filename, 
+	bool ifDebug=false, const std::string& debugfileName="debug");	
+	
 	/**
 	 * \brief Destructor 
 	 *
@@ -248,6 +279,13 @@ public:
 	 */
 	bool getIfDebug() const {return m_iIfDebug;}
 	
+	/**
+	 * \brief   Getter function of the boolean value on whether a restart run
+	 * \param   None
+	 * \return  The boolean value on whether a restart run
+	 */
+	bool getIfRestart() const {return m_iIfRestart;}
+
 	/**
 	 * \brief   Getter function of the filename for printing debug information 
 	 * \param   None
@@ -283,6 +321,14 @@ public:
 	 */
 	double getWriteTimeInterval() const {return m_fWriteTimeInterval;}
 	
+	/**
+	 * \brief   Getter function of the number of times results are written to the particle veiwer 
+	 * \param   None
+	 * \return  The number of times results are written to the particle veiwer
+	 */
+	double getWriteStep() const {return m_iWriteStep;}
+
+
 	/**
 	 * \brief   Getter function of the specified CFL coefficient 
 	 * \param   None
@@ -346,6 +392,24 @@ public:
 	 * \note    We only have 1D limiter now
 	 */
 	bool getUseLimiter() const {return m_iUseLimiter;}
+
+
+        /**
+         * \brief   Getter function of the specified boolean value on whether to use Lax Wendroff scheme or Beam Warming scheme
+         * \param   None
+         * \return  The specified boolean value on whether to use Lax Wendroff scheme or Beam Warning scheme
+         */
+        bool getIfLaxWendroff() const {return m_iIfLaxWendroff;}
+
+
+        /**
+         * \brief   Getter function of the specified boolean value on whether to use non directional splitting Lax Wendroff scheme or directional splitting schemes
+         * \param   None
+         * \return  The specified boolean value on whether to use non directional splitting Lax Wendroff scheme or directional splitting schemes
+         */
+        bool getIfNoSplit() const {return m_iIfNoSplit;}
+
+        int getIfSPH() const {return m_iIfSPH;}
 	
 	/**
 	 * \brief   Getter function of the specified threshold value on pressure if limiter is used
@@ -436,8 +500,63 @@ public:
 	 * \note    If this value is exceeded certain actions, such as re-calculating spatial derivatives using
 	 *          a lower order of local polynomial fitting, needs to be carried to avoid the crash of the program
 	 */
-	double getInvalidVolume() const {return m_fInvalidVolume;}
+	double getInvalidDensity() const {return m_fInvalidDensity;}
 	
+	/**
+	 * \brief   Getter function if use critical pressure for cavitation
+	 *  
+	 * \param   None
+	 * \return  The critical pressure
+	 * \note    1: yes 0:no
+	 */
+	int getUseCriticalPressure() const {return m_iUseCriticalPressure;}
+
+	/**
+	 * \brief   Getter function of the critical pressure for cavitation
+	 *  
+	 * \param   None
+	 * \return  The critical pressure
+	 * \note    If pressure < critical pressure then pressure is set to be zero
+	 */
+	double getCriticalPressure() const {return m_fCriticalPressure;}
+	
+	
+	/**
+	 * \brief   Getter function of if use variable neighbour search radius
+	 *  
+	 * \param   None
+	 * \return  if use variable neighbour search radius
+	 */
+	double getVariableNeiSearchRadius() const {return m_iVariableNeiSearchRadius;}
+	
+
+	/**
+	 * \brief   Getter function of how many times is the neighbour search radius wrt 
+	 *          inter-particle spacing
+	 *  
+	 * \param   None
+	 * \return  times
+	 */
+	double getTimesNeiSearchRadius() const {return m_fTimesNeiSearchRadius;}
+	
+	/**
+	 * \brief   Getter function of how many times is the contact length wrt 
+	 *          inter-particle spacing
+	 *  
+	 * \param   None
+	 * \return  times
+	 */
+	double getTimesContactLength() const {return m_fTimesContactLength;}
+
+	/**
+	 * \brief   Getter function of times of buffer zone wrt inter-particle spacing 
+	 *          
+	 * \param   None
+	 * \return  times
+	 */
+	double getTimesBoundingBox() const {return m_fTimesBoundingBox;}
+
+
 	/**
 	 * \brief   Getter function of the specified tree depth for the octree neighbour search algorithm  
 	 * \param   None
@@ -483,7 +602,7 @@ public:
 	 * \param   None
 	 * \return  The number of \e boundary particles initialized
 	 */
-	std::size_t getBoundaryNum() const {return m_iBoundaryNum;}
+//	std::size_t getBoundaryNum() const {return m_iBoundaryNum;}
 	
 	/**
 	 * \brief   Getter function of the start index of fluid particles in the particle data arrays  
@@ -497,14 +616,14 @@ public:
 	 * \param   None
 	 * \return  The start index of boundary particles in the partical data arrays
 	 */
-	std::size_t getBoundaryStartIndex() const {return m_iBoundaryStartIndex;}
+//	std::size_t getBoundaryStartIndex() const {return m_iBoundaryStartIndex;}
 	
 	/**
 	 * \brief   Getter function of the start index of ghost particles in the particle arrays of the ParticleData class  
 	 * \param   None
 	 * \return  The start index of ghost particles in the particle arrays
 	 */
-	std::size_t getGhostStartIndex() const {return m_iGhostStartIndex;}
+//	std::size_t getGhostStartIndex() const {return m_iGhostStartIndex;}
 	
 	/**
 	 * \brief   Getter function of the number of particles located inside the specified radius of 
@@ -600,7 +719,8 @@ public:
 	 *          It is advised not to assign the ownership of this array to other classes
 	 */
 	double* getVolume() const {return m_vVolume;}
-	
+	double* getMass() const {return m_vMass;}
+
 	/**
 	 * \brief   Getter function of the array of pressure of the initialized particles  
 	 * \param   None
@@ -625,6 +745,18 @@ public:
 	 */
 	double* getSoundSpeed() const {return m_vSoundSpeed;}
 	
+	/**
+	 * \brief   Getter function of the array of local inter-particle spacing 
+	 * \param   None
+	 * \return  Pointer pointing to the array of local inter-particle spacing
+	 * \warning The array of volume is initialized on the heap in this class, 
+	 *          and will be not deleted in the destructor of this class. 
+	 *          The reason is that the ownership of this array will be 
+	 *          transfered to the ParticleData class via this getter function. 
+	 *          It is advised not to assign the ownership of this array to other classes
+	 */
+	double* getLocalParSpacing() const {return m_vLocalParSpacing;}
+
 	/**
 	 * \brief   Getter function of the array of "object tags" of the initialized particles  
 	 * \param   None
@@ -652,19 +784,27 @@ public:
 	 * \param   None
 	 * \return  Vector of pointers to BoundingBox type 
 	 */
-	const std::vector<BoundingBox*>& getFluidBoundingBox() const {return m_vFluidBoundingBox;}	
+	std::vector<BoundingBox*>& getFluidBoundingBox() {return m_vFluidBoundingBox;}	
 	
 	/**
 	 * \brief   Getter function of the types of the initialized boundary objects  
 	 * \param   None
 	 * \return  Vector of strings of boundary object types
 	 */
-	const std::vector<std::string>& getBoundaryObjTypes() const {return m_vBoundaryObjTypes;}
+	std::vector<std::string>& getBoundaryObjTypes() {return m_vBoundaryObjTypes;}
+
+	/**
+	 * \brief   Getter function of the initialized boundary objects  
+	 * \param   None
+	 * \return  Vector of strings of boundary objects
+	 */
+	std::vector<Boundary*>& getBoundaryObj() {return m_vBoundaryObj;}
 private:
 	
 	//--------------------------Data from arg list--------------------------------
-	const std::string m_sDebugfileName; ///< filename for printing debug info
 	bool m_iIfDebug; ///< if true then print debug info
+	const std::string m_sDebugfileName; ///< filename for printing debug info
+	
 
 	//----------------------------------------------------------------------------
 
@@ -673,7 +813,8 @@ private:
 	int m_iNumThreads;///< Number of threads 
 	double m_fStartTime;///< simulation start time
 	double m_fEndTime; ///< simulation end time	
-	double m_fWriteTimeInterval;///< write time interval 
+	double m_fWriteTimeInterval;///< write time interval
+	std::size_t m_iWriteStep; ///< write step
 	double m_fCFLCoeff;///< CFL coeff
 	int m_iDimension;///< dimension
 	int m_iFluidObjNum;///< number of fluid objects		
@@ -688,7 +829,14 @@ private:
 	double m_fGravity;///< gravity
 	bool m_iMovingBoxForGhostParticle;///< if true then the fluid box will be updated 1:yes 0:no
 	bool m_iUseLimiter;///< if use limiter or not 1:yes 0:no
-	double m_fThresholdP;///< Threshold value on pressure if limiter is used 
+	bool m_iIfLaxWendroff;///< if Lax Wendroff scheme is used for second order
+        bool m_iIfNoSplit;///< if non directional Lax Wendroff scheme is used
+	int m_iIfSPH;
+	double m_fThresholdP;///< Threshold value on pressure if limiter is used
+	bool m_iUseCriticalPressure;///< if use critical pressure for cavitation or not 1:yes 0:no
+	double m_fCriticalPressure;///< value of critical pressure
+	int m_iVariableNeiSearchRadius; ///< if use variable neighbour search radius 1:yes 0:no
+	
 	//-----------------------------------------------------------------------------
 
 	
@@ -702,10 +850,14 @@ private:
 	std::size_t  m_iNumCol1stOrder;//TODO///< the number of columns of A when solving 1st order LPF
 	double m_fNeiSearchRadius;///< the radius for neighbour search
 	double m_fInvalidPressure;///< if p < invalid pressure => invalid state
-	double m_fInvalidVolume;///< volume cannot be negative: if volume < invalid volume => invalid state	
+	double m_fInvalidDensity;///< volume cannot be negative: if volume < invalid volume => invalid state	
 	int m_iTreeDepth;///< the octree depth for neighbour search		
 	double m_fContactLength;///< defined length such that for two fluid particles from different fluid object, if the distance from each other is shorter than the length the two fluid particles start to interact with each other
-	
+	double m_fTimesContactLength; ///< how many times larger than m_fInitParticleSpacing
+	double m_fTimesNeiSearchRadius; ///< how many times is the neighbour search radius wrt average inter-particle spacing
+	double m_fTimesCapacity; ///< how many times capacity is wrt m_iFluidNum+m_iBoundaryNum
+	std::size_t m_fAdditionalCapacity; //< how many additional capacity is besides m_fTimesCapacity*(m_iFluidNum+m_iBoundaryNum)
+	double m_fTimesBoundingBox; ///< how many times is the buffer zone wrt average inter-particle spacing
 	// ----------------------------------------------------------------------------
 
 	
@@ -713,16 +865,17 @@ private:
 	
 	std::size_t m_iCapacity;///< Maximum length of particle arrays (> the total number of all particles)  	
 	std::size_t m_iFluidNum;///< Number of fluid particles
-	std::size_t m_iBoundaryNum;///< Number of boundary particles
+//	std::size_t m_iBoundaryNum;///< Number of boundary particles
 	//std::size_t m_iGhostNum; ///< NUmber of ghost particles
 	//std::size_t m_iTotalNum;///< Number of all particles
 	std::size_t m_iFluidStartIndex;///< Start index of fluid particles in the particle array
-	std::size_t m_iBoundaryStartIndex;///< Start index of boundary particles in the particle array
-	std::size_t m_iGhostStartIndex;///< Start index of ghost particles in the particle array		
+//	std::size_t m_iBoundaryStartIndex;///< Start index of boundary particles in the particle array
+//	std::size_t m_iGhostStartIndex;///< Start index of ghost particles in the particle array		
 	std::vector<BoundingBox*> m_vFluidBoundingBox;///< Initial bounding box of the initialized fluid objects
 	std::vector<Geometry*> m_vFluidObj;///< Vector of fluid objects
-	std::vector<BoundingBox*> m_vBoundaryBoundingBox;///< Initial bounding box of the initialized boundary objects
-	std::vector<Geometry*> m_vBoundaryObj;///< Vector of boundary objects 
+//	std::vector<BoundingBox*> m_vBoundaryBoundingBox;///< Initial bounding box of the initialized boundary objects
+//	std::vector<Geometry*> m_vBoundaryObj;///< Vector of boundary objects 
+	std::vector<Boundary*> m_vBoundaryObj;///< Vector of boundary objects
 	std::vector<State*> m_vFluidObjState;///< Vector of objects of fluid state
 	std::vector<std::string> m_vFluidObjNames; ///< Vector of fluid object names 	
 	std::vector<std::string> m_vFluidObjStateNames; ///< Vector of fluid object state names 	
@@ -730,7 +883,7 @@ private:
 	std::vector<std::string> m_vBoundaryObjTypes; ///< Vector of boundary object types 
 
 	size_t m_iNumParticleWithinSearchRadius;///< the number of particles within the search radius at initialization time
-
+	bool m_iIfRestart; ///< 0:no restart 1:restart
 	//----------------------------------------------------------------------------
 	
 	//----------------------------Array data--------------------------------------
@@ -742,27 +895,38 @@ private:
 	double* m_vVelocityV;///< velocity in y-coordinate
 	double* m_vVelocityW;///< velocity in z-coordinate
 	double* m_vVolume;///< volume
+	double* m_vMass;
 	double* m_vPressure;///< pressure	
 	double* m_vSoundSpeed;///< sound speed
 	//double* m_vEnergy;///< energy
 	int* m_vObjectTag;///< tag=1,2,3,...:fluid objects; otherwise: boundary or ghost particles
-	
+	double* m_vLocalParSpacing;///< local particle spacing
 	//-----------------------------------------------------------------------------
 	
 	EOS* m_pEOS;///< pointer to the EOS object
-	std::ofstream debug;///< output information for debugging
+	//std::ofstream debug;///< output information for debugging
+	std::string m_sFilenameSaveInit; ///< the filename for saving initial setting for restart
 
 private:
 	//--------------------------------Methods--------------------------------------
 	
+	/// read input file
+	void readInputfile(const std::string& inputfileName);
+	
+	/// set the params that should be optimal and should not be determined by the user
+	void setParams();
+	
+	/// set the EOS model
+	void setEOS();
+	
+	/// set fluid geometry & state objects and boundary geometry objects
+	void setObjs();
+	
+	/// Set the bounding boxes of fluid and boundary objects 
+	void setBoundingBox();		
+
 	/// Allocate memory for particle array after the total number of fluid particles is determined
-	void initParticleDataMemory(); 
-	
-	/// set predetermined params
-	void setParams(); 
-	
-	/// Compute the bounding boxes of the initialized fluid and boundary objects 
-	void computeInitBoundingBox();
+	void initParticleDataMemory(); 	
 	
 	/// Initialize fluid and boundary object geoemtry and state (calls initGeometryAndStateOnHexPacking())
 	void initGeometryAndState();		
@@ -770,10 +934,13 @@ private:
 	/// Build fluid object geoemtry and assign state in 1D 
 	size_t initGeometryAndState1D(bool saveData);
 
-	/// Build fluid object geoemtry and assign state on hexagonal packing 
-	size_t initGeometryAndStateOnHexPacking(bool saveData, const std::string& kind);
+	/// Build fluid object geoemtry and assign state on hexagonal packing based on level set function 
+	size_t initGeometryAndStateOnHexPacking(bool saveData);
 	
-	/// Compute number of particles within search radius at initialization 
+	/// Build fluid object geoemtry and assign state on hexagonal packing based on level set function 
+	size_t initGeometryAndStateOnHexPackingTemp(bool saveData);
+
+	/// Compute number of particles within search radius wrt the specified initial particle spacing 
 	void computeNumParticleWithinSearchRadius();
 	
 	/// Calculate and set boundary and fluid bounding box starting index in the BoundingBox objects 
@@ -781,6 +948,37 @@ private:
 	
 	/// Set up object tags (fluid objects: 1,2,3,...; boundary and ghost objects:otherwise) 
 	void setObjectTag();
+	
+	/// Set the local inter-particle spacing
+	void setLocalParSpacing();
+	
+	/// Set the local inter-particle spacing
+	void setLocalParSpacingTemp();
+
+	/// read parameters file (for restart)
+	void readParamfile(const std::string& paramfileName);
+	
+	/// read data file (for restart)
+	void readDatafile(const std::string& datafileName);
+
+	/// Set the bounding boxes of fluid and boundary objects (for restart)
+	void setBoundingBox(const int* tag, std::size_t num);
+	
+	/// modify the intial particle spacing by the average of inter particle spacing (for restart)
+	void modifyInitParticleSpacing();
+
+	/// modify the initial neighbour search radius by the modified initial inter particle spacing (for restart)
+	void modifyInitNeighbourSearchRadius();
+
+	/// modify the initial contact length by the modified initial inter particle spacing (for restart)
+	void modifyInitContactLength();
+
+	/// modify the number of particles within search radius (for restart)
+	void modifyNumParticleWithinSearchRadius();
+
+	/// modify the local inter-particle spacing
+	void modifyLocalParSpacing();
+
 };
 
 

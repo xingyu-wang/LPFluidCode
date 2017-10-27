@@ -52,6 +52,9 @@ int QRSolver::solve(double* result, double* b) {
 		int JPVT_[m_iNumCol]; // Pivoting matrix
 		double TAU_[m_iNumCol]; // Scalar factors of elementary reflectors	
 		
+		fill_n(JPVT_,m_iNumCol,0);
+		fill_n(TAU_,m_iNumCol,0);
+
 		//FOR STORING RETURNING INFO BY DGEQP3 SUBROUTINE
 		int info = 0;	
 		

@@ -49,6 +49,7 @@ class ParticleViewer;
  */
 class TimeController {
 public:
+	virtual ~TimeController() {}
 	/**
 	 * \brief   Calls main solvers of the simulation and determines the time stepping between iterations 
 	 *
@@ -67,6 +68,7 @@ protected:
 	double m_fWriteTimeInterval; ///< The physical time interval between two writting of results
 	double m_fNextWriteTime; ///< The next physical time point to write results
 	double m_fDt; ///< The physical time interval between two iterations of the simulation
+        double m_fAvgParticleSpacing; ///< the average particle spacing
 	std::size_t m_iWriteStep; ///< The number of times results are written to the particle veiwer
 	bool m_iIfDebug;///< if true then print debug info
 	std::ofstream debug;///< output information for debugging

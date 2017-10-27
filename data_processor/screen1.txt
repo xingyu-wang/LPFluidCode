@@ -1,0 +1,13 @@
+Number of particles: 18574
+Interpolating... 0% completed.
+Interpolating... 10% completed.
+Interpolating... 20% completed.
+Interpolating... 30% completed.
+Interpolating... 40% completed.
+Interpolating... 50% completed.
+Interpolating... 60% completed.
+Interpolating... 70% completed.
+Interpolating... 80% completed.
+Interpolating... 90% completed.
+Writing...
+Writing completed

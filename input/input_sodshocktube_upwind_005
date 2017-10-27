@@ -1,0 +1,28 @@
+24							number of threads
+0							start time
+1							end time
+0.1						write time interval
+0.5						CFL coefficient
+2							dimension
+1							how many fluid objects
+shocktube2d					geoemtry for fluid object0
+sodstate                        state for fluid object0
+1							how many boundary objects?
+shocktube2dsolidboundary	boundary for fluid object0 (in 1d ignore this)
+solid						type of boundary object (periodic, free, solid)
+0							use random order for direction splittig? 1:yes 0:no
+1							order of local polynomial fitting
+1							EOS choice: 1:POLY 2:Stiffened POLY
+1.4				EOS param: gamma
+0							EOS param: pinf SPOLY(=cs0*cs0*rho0/gamma)) (real sound speed = 145.14 cm/ms) rho0=13.534 g/cm^3
+0.							EOS param: einf
+0.05						initial particle spacing
+0.							gravity
+1							use a moving box for ghost particle generation? 1:yes 0:no
+0							use limiter? 1:yes 0:no 
+10							Threshold value on pressure if limiter is used
+0							use critical pressure for cavitation? 1:yes 0:no
+0							critical pressure
+1							variable neighbour search radius? 0:no 1:yes
+0             second order scheme 1: Lax Wendroff scheme 0: Beam Warming scheme
+0             no directional splitting 1: no split 0: split

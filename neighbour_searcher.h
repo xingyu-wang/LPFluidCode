@@ -38,7 +38,7 @@ typedef unsigned __int64 uint64_t;
 #include <vector>
 #include <deque>
 #include "octree.h"
-
+#include "math.h"
 
 class Initializer;
 
@@ -97,6 +97,8 @@ public:
 	 * \return                  0, if success        
 	 */
 	virtual int buildSearchStructure(const double* x, const double* y, const double* z, size_t begin, size_t numParticles) = 0;
+        virtual int buildSearchStructure(const double* x, const double* y, const double* z, const double* m, size_t begin, size_t numParticles) = 0;
+        virtual int buildSearchStructure(const double* x, const double* y, const double* z, const double* m, const double* vv, size_t begin, size_t numParticles) = 0;
  
 #ifdef _OPENMP
 	/**
@@ -122,6 +124,30 @@ public:
 	 *       
 	 */	
 	virtual int searchNeighbour(const double x, const double y, const double z, const double radius, int* result, double* distance, size_t& result_length, int tid, int index = -1) = 0;
+	/**
+	 * \brief Searches the nearest neighbours from each quadrant for a particle on the built search data structure  
+	 *
+	 * \param [in]  x             The location in the x-coordinate of the target particle
+	 * \param [in]  y             The location in the y-coordinate of the target particle 
+	 * \param [in]  z             The location in the z-coordinate of the target particle
+	 * \param [in]  radius        The neighbour search radius 
+	 * \param [out] result        An array saving the results of neighbour search (the neighbour list), 
+	 *                            which is sorted based on the 
+	 *                            the \e distance (in the \b ascending order of \e distance) 
+	 * \param [out] distance      An array saving the distance between the target particle and its neighbours
+	 * \param [out] result_length The number of neighbours obtained for the target particle
+	 * \param [in]  tid           The thread id
+	 * \param [in]  index         The index of target particle; this index is used to remove the target particle
+	 *                            itself from its own neighbour list. The default argument is -1,
+	 *                            which should only be used when the target particle itself is \b not
+	 *                            in the search structure
+	 * \return                    0, if success        
+	 *
+	 * \note This is the \b multithread version of this function  
+	 *       
+	 */	
+	virtual int searchNeighbourQuadrant(const double x, const double y, const double z, const double radius, int* result, double* distance, size_t& result_length, int tid, int index = -1) = 0;
+        virtual int searchNeighbourDirection(const double x, const double y, const double z, const double radius, int* result, double* distance, size_t& result_length, int tid, int index = -1) = 0;
 #else
 	/**
 	 * \brief Searches the nearest neighbours for a particle on the built search data structure  
@@ -145,12 +171,45 @@ public:
 	 *       
 	 */
 	virtual int searchNeighbour(const double x, const double y, const double z, const double radius, int* result, double* distance, size_t& result_length, int index = -1) = 0;
+	/**
+	 * \brief Searches the nearest neighbours from each quadrant for a particle on the built Octree object  
+	 *
+	 * \param [in]  x             The location in the x-coordinate of the target particle
+	 * \param [in]  y             The location in the y-coordinate of the target particle 
+	 * \param [in]  z             The location in the z-coordinate of the target particle
+	 * \param [in]  radius        The neighbour search radius 
+	 * \param [out] result        An array saving the results of neighbour search (the neighbour list), 
+	 *                            which is sorted based on the 
+	 *                            the \e distance (in the \b ascending order of \e distance) 
+	 * \param [out] distance      An array saving the distance between the target particle and its neighbours
+	 * \param [out] result_length The number of neighbours obtained for the target particle
+	 * \param [in]  tid           The thread id
+	 * \param [in]  index         The index of target particle; this index is used to remove the target particle
+	 *                            itself from its own neighbour list. The default argument is -1,
+	 *                            which should only be used when the target particle itself is \b not
+	 *                            in the search structure
+	 * \return                    0, if success        
+	 *
+	 * \note This is the \b single-thread version of this function  
+	 *       
+	 */
+	virtual int searchNeighbourQuadrant(const double x, const double y, const double z, const double radius, int* result, double* distance, size_t& result_length, int index = -1) = 0;
+        virtual int searchNeighbourDirection(const double x, const double y, const double z, const double radius, int* result, double* distance, size_t& result_length, int index = -1) = 0;
 #endif
-
 //virtual int searchNeighbour(const double x, const double y, const double z, const double radius, int* result, size_t& result_length, int index = -1) = 0;
+        virtual int densityEstimator(const double x, const double y, const double z, const double radius, double* density, double dir_x, double dir_y, double dir_z) =0;
+
+        virtual int densityEstimator(const int index, const double x, const double y, const double z, const double radius, double* density, double dir_x, double dir_y, double dir_z) =0;
+        virtual int densityEstimator(const int index, const double x, const double y, const double z, const double radius, double* density, const double* volume, double* vmin, double* vmax) =0;
+        virtual int VoronoiDensityEstimator(const int index, const double x, const double y, const double z, const double radius, double* density) =0;
 
   //virtual int searchNeighbour(const double x, const double y, const double z, const double radius, int* result, size_t& result_length) = 0;
-
+    
+	/*
+	 * \brief reset the maxParticleNum when data array is augmented 
+	 *
+	 */
+	virtual void setMaxParticleNum(size_t maxParticleNum) = 0; 
 
 };
 
@@ -212,8 +271,10 @@ public:
 #ifdef _OPENMP
 		for(int i=0 ; i<m_iTheadNum ; i++) {
 			delete[] m_pSearchResult[i];
+			delete[] m_pSearchResultTemp[i];	
 		}
 		delete[] m_pSearchResult;
+		delete[] m_pSearchResultTemp;
 #else
 		delete[] m_pSearchResult;
 #endif
@@ -253,7 +314,9 @@ public:
 	 * \return                  0, if success        
 	 */	
 	virtual int buildSearchStructure(const double* x, const double* y, const double* z, size_t begin, size_t numParticles);
-   
+        virtual int buildSearchStructure(const double* x, const double* y, const double* z, const double* m, size_t begin, size_t numParticles);
+        virtual int buildSearchStructure(const double* x, const double* y, const double* z, const double* m, const double* vv, size_t begin, size_t numParticles);
+ 
    
 #ifdef _OPENMP
 	/**
@@ -279,6 +342,30 @@ public:
 	 *       
 	 */
 	virtual int searchNeighbour(const double x, const double y, const double z, const double radius, int* result, double* distance, size_t& result_length, int tid, int index = -1);
+	/**
+	 * \brief Searches the nearest neighbours from each quadrant for a particle on the built Octree object  
+	 *
+	 * \param [in]  x             The location in the x-coordinate of the target particle
+	 * \param [in]  y             The location in the y-coordinate of the target particle 
+	 * \param [in]  z             The location in the z-coordinate of the target particle
+	 * \param [in]  radius        The neighbour search radius 
+	 * \param [out] result        An array saving the results of neighbour search (the neighbour list), 
+	 *                            which is sorted based on the 
+	 *                            the \e distance (in the \b ascending order of \e distance) 
+	 * \param [out] distance      An array saving the distance between the target particle and its neighbours
+	 * \param [out] result_length The number of neighbours obtained for the target particle
+	 * \param [in]  tid           The thread id
+	 * \param [in]  index         The index of target particle; this index is used to remove the target particle
+	 *                            itself from its own neighbour list. The default argument is -1,
+	 *                            which should only be used when the target particle itself is \b not
+	 *                            in the search structure
+	 * \return                    0, if success        
+	 *
+	 * \note This is the \b multithread version of this function  
+	 *       
+	 */
+	virtual int searchNeighbourQuadrant(const double x, const double y, const double z, const double radius, int* result, double* distance, size_t& result_length, int tid, int index = -1);
+        virtual int searchNeighbourDirection(const double x, const double y, const double z, const double radius, int* result, double* distance, size_t& result_length, int tid, int index = -1);
 #else
 	/**
 	 * \brief Searches the nearest neighbours for a particle on the built Octree object  
@@ -302,18 +389,54 @@ public:
 	 *       
 	 */
 	virtual int searchNeighbour(const double x, const double y, const double z, const double radius, int* result, double* distance, size_t& result_length, int index = -1);
+	/**
+	 * \brief Searches the nearest neighbours from each quadrant for a particle on the built Octree object  
+	 *
+	 * \param [in]  x             The location in the x-coordinate of the target particle
+	 * \param [in]  y             The location in the y-coordinate of the target particle 
+	 * \param [in]  z             The location in the z-coordinate of the target particle
+	 * \param [in]  radius        The neighbour search radius 
+	 * \param [out] result        An array saving the results of neighbour search (the neighbour list), 
+	 *                            which is sorted based on the 
+	 *                            the \e distance (in the \b ascending order of \e distance) 
+	 * \param [out] distance      An array saving the distance between the target particle and its neighbours
+	 * \param [out] result_length The number of neighbours obtained for the target particle
+	 * \param [in]  tid           The thread id
+	 * \param [in]  index         The index of target particle; this index is used to remove the target particle
+	 *                            itself from its own neighbour list. The default argument is -1,
+	 *                            which should only be used when the target particle itself is \b not
+	 *                            in the search structure
+	 * \return                    0, if success        
+	 *
+	 * \note This is the \b single-thread version of this function  
+	 *       
+	 */
+        virtual int searchNeighbourDirection(const double x, const double y, const double z, const double radius, int* result, double* distance, size_t& result_length, int index = -1);
+	virtual int searchNeighbourQuadrant(const double x, const double y, const double z, const double radius, int* result, double* distance, size_t& result_length, int index = -1);
 #endif
 
+        virtual int densityEstimator(const double x, const double y, const double z, const double radius, double* density, double dir_x, double dir_y, double dir_z);
 
+        virtual int densityEstimator(const int index, const double x, const double y, const double z, const double radius, double* density, double dir_x, double dir_y, double dir_z);
+        virtual int densityEstimator(const int index, const double x, const double y, const double z, const double radius, double* density, const double* volume, double* v_min, double* v_max);
+
+        virtual int VoronoiDensityEstimator(const int index, const double x, const double y, const double z, const double radius, double* density);
+
+	/*
+	 * \brief reset the maxParticleNum when data array is augmented 
+	 *
+	 */
+	virtual void setMaxParticleNum(size_t maxParticleNum);
 
 private:
 	Octree* m_pOctree;///< The octree
 	size_t m_iMaxParticleNum;///< The capacity of the particle array (> the total number of particles)
 	size_t m_iMaxNeighborNum;///< The maximum number of neighbours of a particle
-
+	size_t m_iMinNeighborNum;///< The minimum number of neighbours of a particle
 #ifdef _OPENMP
 	int m_iTheadNum;///< The number of threads 
-	SearchResult** m_pSearchResult;///< The search result for each thread id  
+	SearchResult** m_pSearchResult;///< The search result for each thread id 
+	SearchResult** m_pSearchResultTemp; 
 	//vector<SearchResult*> m_pSearchResult;
 #else
 	SearchResult* m_pSearchResult;/// The search result (of length \e m_iMaxNeighborNum)

@@ -20,6 +20,8 @@ double GaussianPressure1DState::density(double x, double y, double z) {
 
 void GaussianPressure1DState::velocity(double x, double y, double z, double& vX, double& vY, double& vZ) {
 	vX = m_fVelX;
+	vY = 0;
+	vZ = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////
