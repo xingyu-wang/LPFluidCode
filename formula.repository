@@ -1,0 +1,23 @@
+\form#0:\[ U_{t}^{'} + \left[ F(U^{'}) \right]_{x} = 0, \]
+\form#1:\[ U^{'} = \left( \begin{array} {c} V \\ u \\ E \end{array} \right), \, F(U^{'}) = V_{0} \left( \begin{array} {c} -u \\ P \\ Pu \end{array} \right), \]
+\form#2:$V$
+\form#3:$u$
+\form#4:$E$
+\form#5:$P$
+\form#6:$ (x-\mbox{xcen})^2+(y-\mbox{ycen})^2+(z-\mbox{zcen})^2 \leq r^2 $
+\form#7:$ (x-\mbox{xcen})^2+(y-\mbox{ycen})^2 \leq r^2 $
+\form#8:$ -\mbox{rightLen} \leq x \leq \mbox{leftLen} $
+\form#9:$ $
+\form#10:$ (y-\mbox{ycen})^2+(z-\mbox{zcen})^2 \leq r^2 $
+\form#11:$ |x-\mbox{xcen}| \leq \mbox{length}/2 $
+\form#12:$ (y-\mbox{ycen})^2 \leq r^2 $
+\form#13:$ x $
+\form#14:\[ QRPx = b \]
+\form#15:$ P $
+\form#16:$ Q^T $
+\form#17:\[ RPx = Q^T b \]
+\form#18:$ y = Px $
+\form#19:$ Px = y $
+\form#20:$x$
+\form#21:$y$
+\form#22:$z$
